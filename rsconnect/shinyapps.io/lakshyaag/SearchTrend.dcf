@@ -1,0 +1,12 @@
+name: SearchTrend
+title: SearchTrend
+username:
+account: lakshyaag
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 2307046
+bundleId: 3153159
+url: https://lakshyaag.shinyapps.io/SearchTrend/
+when: 1589572471.82372
+asMultiple: FALSE
+asStatic: FALSE
