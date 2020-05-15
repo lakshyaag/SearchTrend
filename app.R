@@ -126,7 +126,7 @@ server <- function(input, output, session) {
                       title = "Popularity",
                       position = 'bottomright') %>%
             addEasyButton(easyButton(icon="fa-globe", title="Center on India",
-                                     onClick=JS("function(btn, map){ map.setView([20.59, 78.96], 4); }")))
+                                     onClick=JS("function(btn, map){ map.setView([21.59, 78.96], 4); }")))
         
         
         map
@@ -134,7 +134,7 @@ server <- function(input, output, session) {
     
     output$how_to_interpret <- renderUI({
         HTML(
-            paste0('<h4><b>How to interpret the map?</b></h4>',
+            paste0('<hr><h4><b>How to interpret the map?</b></h4>',
                    "Values are calculated on a scale from 0 to 100, where 100 is the location with the most popularity as a fraction of total searches in that location, ",
                    "a value of 50 indicates a location which is half as popular. A value of 0 indicates a location where there was not enough data for this term.",
                    '<br>',
