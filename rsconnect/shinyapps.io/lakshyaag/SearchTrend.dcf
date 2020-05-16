@@ -5,8 +5,8 @@ account: lakshyaag
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 2307046
-bundleId: 3154404
+bundleId: 3154511
 url: https://lakshyaag.shinyapps.io/SearchTrend/
-when: 1589610513.59545
+when: 1589615853.62311
 asMultiple: FALSE
 asStatic: FALSE

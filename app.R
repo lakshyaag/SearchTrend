@@ -17,6 +17,10 @@ library(sever)
 load('india_state_shape_simplfied.Rdata')
 og_data <- india_shape@data
 
+select_range_vec <- c('Past day' = 'now 1-d', 
+                      'Past 7 days' = 'now 7-d', 
+                      'Past 30 days' = 'today 1-m')
+
 ## Shiny app starts here
 
 # UI code
@@ -44,8 +48,10 @@ body <- dashboardBody(
                     dateInput(inputId = 'date_trend', label = 'Select date', format = 'DD, dd-M-yyyy'),
                     selectInput(inputId = 'search_term', label = 'Select search term (top 20 for selected date)', 
                                 choices = NULL, multiple = F, selectize = T),
-                    htmlOutput('how_to_interpret'),
-                    htmlOutput('developer')
+                    selectInput(inputId = 'search_range', label = 'Select time span of query', 
+                                choices = select_range_vec,
+                                multiple = F, selectize = T, selected = 'now 7-d'),
+                    htmlOutput('how_to_interpret')
                 ),
                 
                 uiOutput('map_box')
@@ -94,10 +100,14 @@ server <- function(input, output, session) {
         updateSelectInput(session, inputId = 'search_term', choices = search_trend_data()$query)
     })
     
+    search_range_name <- reactive({
+        tolower(names(select_range_vec)[select_range_vec == input$search_range])
+    })
+    
     term_map_data <- reactive({
         search_trend_data() %>%
             filter(query == input$search_term) %>%
-            mutate(region_interest = list(gtrends(keyword = query, geo = 'IN', time = 'now 7-d')$interest_by_region)) %>%
+            mutate(region_interest = list(gtrends(keyword = query, geo = 'IN', time = input$search_range)$interest_by_region)) %>%
             pull(region_interest) %>%
             pluck(1) %>%
             select(1:3) %>%
@@ -117,8 +127,7 @@ server <- function(input, output, session) {
             id = 'map-container',
             status = 'success',
             solidHeader = T,
-            title = paste0('Trends by state for term: ', input$search_term, ' on ', 
-                           format(input$date_trend, format = "%d %b %Y")),
+            title = paste0('Trends by state for term: ', input$search_term, ' in the ', search_range_name()),
             leafletOutput('state_map') %>% withSpinner(type = 8)
         )
     })
@@ -152,21 +161,15 @@ server <- function(input, output, session) {
         HTML(
             paste0('<hr><h4><b>How to interpret the map?</b></h4>',
                    "Values are calculated on a scale from 0 to 100, where 100 is the location with the most popularity as a fraction of total searches in that location, ",
-                   "a value of 50 indicates a location which is half as popular. A value of 0 indicates a location where there was not enough data for this term.",
-                   '<br>',
+                   "a value of 50 indicates a location which is half as popular. A value of 0 indicates a location where there was not enough data for this term. ",
+                   "<em>Darker shades indicate where the term has a higher probability of being searched.</em>",
+                   '<hr>',
                    '<h4>Data from ',
                    '<a href = "https://trends.google.com/trends/trendingsearches/daily?geo=IN" target = "_blank">Google Trends</a>',
-                   ' for past 7 days from ',
+                   ' for the ', search_range_name(), ' from ',
                    '<em>', format(Sys.Date(), format = "%B %d, %Y"), '.</em></h4>',
-                   'Code available on <a href = "https://github.com/lakshyaag/searchtrend" target = "_blank"> GitHub</a>'
-            )
-        )
-    })
-    
-    output$developer <- renderUI({
-        HTML(
-            paste0('<hr>',
-                   '<h4><b>Made by <a href = "https://github.com/lakshyaag/">Lakshya Agarwal</a></b></h4>'
+                   '<h4>Code available on <a href = "https://github.com/lakshyaag/searchtrend" target = "_blank"> GitHub. </a>',
+                   '<b>Made by <a href = "https://github.com/lakshyaag/">Lakshya Agarwal.</a></b></h4>'
             )
         )
     })
