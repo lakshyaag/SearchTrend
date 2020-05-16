@@ -12,6 +12,7 @@ library(shiny)
 library(shinydashboard)
 library(shinycssloaders)
 library(waiter)
+library(sever)
 
 load('india_state_shape_simplfied.Rdata')
 og_data <- india_shape@data
@@ -31,6 +32,8 @@ sidebar <- dashboardSidebar(
 
 body <- dashboardBody(
     use_waiter(), 
+    use_sever(),
+    
     tags$style(type = "text/css", "#map {height: calc(100vh - 80px) !important;}"),
     tabItem(tabName = 'state',
             fluidRow(
@@ -38,7 +41,7 @@ body <- dashboardBody(
                     title = "Search term to view trends by state",
                     status = 'primary',
                     solidHeader = T,
-                    dateInput(inputId = 'date_trend', label = 'Select date', format = 'dd-M-yyyy'),
+                    dateInput(inputId = 'date_trend', label = 'Select date', format = 'DD, dd-M-yyyy'),
                     selectInput(inputId = 'search_term', label = 'Select search term (top 20 for selected date)', 
                                 choices = NULL, multiple = F, selectize = T),
                     htmlOutput('how_to_interpret'),
@@ -57,8 +60,21 @@ ui <- dashboardPage(header = header, sidebar = sidebar, body = body, skin = 'pur
 # Server code
 
 server <- function(input, output, session) {
-    
+  
     waiter_hide()
+  
+    sever(
+      html = sever_default(title = 'Disconnected!', 
+                           subtitle = 'Your session ended.',
+                           button_class = 'warning'),
+      bg_color = '#5C7EA8', color = 'white'
+    )
+  
+    current_date <- Sys.Date()
+    
+    observe({
+      updateDateInput(session, inputId = 'date_trend', min = current_date - 29, max = current_date, value = current_date)
+    })
     
     search_trend_data <- reactive({
         date <- str_replace_all(as.character(input$date_trend), "-", "")
